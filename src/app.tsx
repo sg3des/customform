@@ -4,24 +4,24 @@ import {
   Checkbox,
   Container,
   Content,
+  DatePicker,
   Divider,
   Footer,
   Form,
   Input,
   InputNumber,
+  Message,
   SelectPicker,
+  Stack,
+  TagInput,
 } from 'rsuite'
 
-import { Param } from 'interfaces'
+import { Param, ParamOpt } from 'interfaces'
 import './app.less'
 
 interface Props {}
 interface State {
-  newField: {
-    name: string
-    type: string
-    label: string
-  }
+  newField: Param
 
   fields: Param[]
 }
@@ -47,18 +47,17 @@ export default class CustomForm extends Component<Props, State> {
   handleAddField = () => {
     let { newField, fields } = this.state
 
-    if (!newField.name || !newField.type) {
-      // alert error
-      return
-    }
+    if (!newField.name || !newField.type) return
+
+    console.log(newField)
 
     // add new field to the fields array
     fields.push(newField as Param)
 
-    this.setState({ newField: { name: '', type: '', label: '' } })
+    this.setState({ newField: { name: '', type: '', label: '' } as Param })
   }
 
-  handleChandleField = (key: string, val: any) => {
+  handleChangeField = (key: string, val: any) => {
     const { newField } = this.state
     // assign value to the new field
     Object.assign(newField, { [key]: val })
@@ -66,8 +65,23 @@ export default class CustomForm extends Component<Props, State> {
     this.setState({ newField })
   }
 
+  handleChangeFieldOpt = (key: string, val: any) => {
+    const { newField } = this.state
+    if (!newField.opt) newField.opt = {} as ParamOpt
+
+    Object.assign(newField.opt, { [key]: val })
+
+    this.setState({ newField })
+  }
+
   handleChangeParam = (p: Param, val: any) => {
     p.value = val
+  }
+
+  handleSubmit = () => {
+    const { fields } = this.state
+
+    console.log(fields)
   }
 
   //
@@ -94,7 +108,19 @@ export default class CustomForm extends Component<Props, State> {
     return (
       <Form className='customform'>
         <h4>Form</h4>
-        {fields.map(this.renderField)}
+        {fields.map((p) => (
+          <div key={p.name} className='form-row'>
+            <label>{p.label || p.name}</label>
+            {this.renderField(p)}
+          </div>
+        ))}
+        {fields.length > 0 && (
+          <Stack justifyContent='center'>
+            <Button type='submit' onClick={this.handleSubmit}>
+              Submit
+            </Button>
+          </Stack>
+        )}
       </Form>
     )
   }
@@ -107,45 +133,64 @@ export default class CustomForm extends Component<Props, State> {
         return this.renderNumber(p)
       case 'checkbox':
         return this.renderCheckbox(p)
+      case 'date':
+        return this.renderDate(p)
+      case 'select':
+        return this.renderSelect(p)
+      default:
+        return <Message type='error'>{p.type} is unsupported field</Message>
     }
   }
 
   renderInput = (p: Param) => {
     return (
-      <div key={p.name}>
-        <label>{p.label || p.name}</label>
-        <Input
-          value={p.value}
-          name={p.name}
-          onChange={(v) => this.handleChangeParam(p, v)}
-        />
-      </div>
+      <Input
+        name={p.name}
+        value={p.value}
+        onChange={(v) => this.handleChangeParam(p, v)}
+      />
     )
   }
 
   renderNumber = (p: Param) => {
     return (
-      <div key={p.name}>
-        <label>{p.label || p.name}</label>
-        <InputNumber
-          value={p.value}
-          name={p.name}
-          onChange={(v) => this.handleChangeParam(p, v)}
-        />
-      </div>
+      <InputNumber
+        name={p.name}
+        value={p.value}
+        onChange={(v) => this.handleChangeParam(p, v)}
+      />
     )
   }
 
   renderCheckbox = (p: Param) => {
     return (
-      <div key={p.name}>
-        <label>{p.label || p.name}</label>
-        <Checkbox
-          checked={p.value}
-          name={p.name}
-          onChange={(v) => this.handleChangeParam(p, v)}
-        />
-      </div>
+      <Checkbox
+        name={p.name}
+        checked={p.value}
+        onChange={(v) => this.handleChangeParam(p, v)}
+      />
+    )
+  }
+
+  renderDate = (p: Param) => {
+    return (
+      <DatePicker
+        name={p.name}
+        value={p.value}
+        onChange={(v) => this.handleChangeParam(p, v)}
+        oneTap
+        block
+      />
+    )
+  }
+
+  renderSelect = (p: Param) => {
+    return (
+      <SelectPicker
+        name={p.name}
+        data={p.opt ? p.opt.options.map((s) => ({ label: s, value: s })) : []}
+        block
+      />
     )
   }
 
@@ -155,11 +200,11 @@ export default class CustomForm extends Component<Props, State> {
     return (
       <Footer>
         <div className='form-row'>
-          <label>Name</label>
+          <label>Name *</label>
           <Input
             placeholder='name...'
             value={newField.name}
-            onChange={(v) => this.handleChandleField('name', v)}
+            onChange={(v) => this.handleChangeField('name', v)}
           />
         </div>
 
@@ -168,23 +213,40 @@ export default class CustomForm extends Component<Props, State> {
           <Input
             placeholder='label...'
             value={newField.label}
-            onChange={(v) => this.handleChandleField('label', v)}
+            onChange={(v) => this.handleChangeField('label', v)}
           />
         </div>
 
         <div className='form-row'>
-          <label>Type</label>
+          <label>Type *</label>
           <SelectPicker
             data={fieldTypes}
             value={newField.type}
             onSelect={(v) => {
-              this.handleChandleField('type', v)
+              this.handleChangeField('type', v)
             }}
             block
           />
         </div>
 
-        <Button onClick={this.handleAddField}>Add</Button>
+        {newField.type === 'select' && (
+          <div className='form-row'>
+            <label>Options</label>
+            <TagInput
+              value={newField.opt?.options || []}
+              onChange={(v) => this.handleChangeFieldOpt('options', v)}
+              block
+            />
+          </div>
+        )}
+
+        <Stack justifyContent='center'>
+          <Button
+            onClick={this.handleAddField}
+            disabled={!newField.name || !newField.type}>
+            Add
+          </Button>
+        </Stack>
       </Footer>
     )
   }

@@ -4,17 +4,12 @@ export interface Param {
   label: string
   value: any
 
-  custom: ParamOpt
+  opt?: ParamOpt
 }
 
 export interface ParamOpt {
-  options: ParamSelectOption[]
+  options: string[]
   min: number
   max: number
   step: number
-}
-
-export interface ParamSelectOption {
-  name: string
-  value: any
 }
