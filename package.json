@@ -1,0 +1,37 @@
+{
+  "name": "customform",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.3.1",
+    "resolve-url-loader": "^5.0.0",
+    "rsuite": "^5.60.0"
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "@craco/types": "^7.1.0",
+    "craco-less": "^3.0.1",
+    "craco-plugin-env": "^1.0.5",
+    "less-loader": "^12.2.0",
+    "react-scripts": "^5.0.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "start": "craco start",
+    "build": "PUBLIC_URL=/front craco build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
