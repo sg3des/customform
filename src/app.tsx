@@ -49,10 +49,8 @@ export default class CustomForm extends Component<Props, State> {
 
     if (!newField.name || !newField.type) return
 
-    console.log(newField)
-
     // add new field to the fields array
-    fields.push(newField as Param)
+    fields.push(newField)
 
     this.setState({ newField: { name: '', type: '', label: '' } as Param })
   }
